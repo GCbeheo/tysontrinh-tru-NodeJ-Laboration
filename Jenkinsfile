@@ -38,7 +38,7 @@ pipeline {
               echo "Building is SUCCESS"
           } else if (params.RESULT == '1') {
               echo "Buiding is FAILURE"
-              return 1 // Exit with code 1 for DEV
+              return 1
           } else {
               error("Invalid ENV parameter value: ${params.RESULT}")
           }
@@ -50,33 +50,31 @@ pipeline {
           withCredentials([usernamePassword(credentialsId: 'jiraApiKey',
                             passwordVariable: 'JIRA_API_KEY',
                             usernameVariable: 'JIRA_USER')]) {
-            script {
-              if ($param.ENV == "uat") {
-                def jiraApiEndpoint = "${params.JIRA_SERVER_URL}/rest/api/2/issue/${params.JIRA_ISSUE_ID}/transitions"
-                def jsonPayload = '''
-                {
-                  "update": {
-                    "comment": [
-                      {
-                        "add": {
-                          "body": "Deploy has been done."
-                        }
+            if ($param.ENV == "uat") {
+              def jiraApiEndpoint = "${params.JIRA_SERVER_URL}/rest/api/2/issue/${params.JIRA_ISSUE_ID}/transitions"
+              def jsonPayload = '''
+              {
+                "update": {
+                  "comment": [
+                    {
+                      "add": {
+                        "body": "Deploy has been done."
                       }
-                    ]
-                  },
-                  "transition": {
-                    "id": "61"
-                  }
+                    }
+                  ]
+                },
+                "transition": {
+                  "id": "61"
                 }
-                '''
-                if ($param.currentResult == 'SUCCESS') {
-                        sh """
-                        curl -X POST -H "Content-Type: application/json" \
-                        -u $JIRA_USER:$JIRA_PASS \
-                        -d '${jsonPayload}' \
-                        '${jiraApiEndpoint}'
-                        """
-                }
+              }
+              '''
+              if ($param.currentResult == 'SUCCESS') {
+                sh """
+                curl -X POST -H "Content-Type: application/json" \
+                -u $JIRA_USER:$JIRA_PASS \
+                -d '${jsonPayload}' \
+                '${jiraApiEndpoint}'
+                """
               }
             }
           }
