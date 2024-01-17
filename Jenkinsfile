@@ -68,7 +68,7 @@ pipeline {
                 }
               }
               '''
-              if ($param.currentResult == 'SUCCESS') {
+              if (currentBuild.currentResult == 'SUCCESS') {
                 sh """
                 curl -X POST -H "Content-Type: application/json" \
                 -u $JIRA_USER:$JIRA_PASS \
