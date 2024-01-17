@@ -50,30 +50,34 @@ pipeline {
           withCredentials([usernamePassword(credentialsId: 'jiraApiKey',
                             passwordVariable: 'JIRA_API_KEY',
                             usernameVariable: 'JIRA_USER')]) {
-            def jiraApiEndpoint = "${params.JIRA_SERVER_URL}/rest/api/2/issue/${params.JIRA_ISSUE_ID}/transitions"
-            def jsonPayload = '''
-            {
-              "update": {
-                "comment": [
-                  {
-                    "add": {
-                      "body": "Deploy has been done."
-                    }
+            script {
+              if (params.ENV == 'uat') {
+                def jiraApiEndpoint = "${params.JIRA_SERVER_URL}/rest/api/2/issue/${params.JIRA_ISSUE_ID}/transitions"
+                def jsonPayload = '''
+                {
+                  "update": {
+                    "comment": [
+                      {
+                        "add": {
+                          "body": "Deploy has been done."
+                        }
+                      }
+                    ]
+                  },
+                  "transition": {
+                    "id": "61"
                   }
-                ]
-              },
-              "transition": {
-                "id": "61"
+                }
+                '''
+                if (currentBuild.currentResult == 'SUCCESS') {
+                  sh """
+                  curl -X POST -H "Content-Type: application/json" \
+                  -u $JIRA_USER:$JIRA_PASS \
+                  -d '${jsonPayload}' \
+                  '${jiraApiEndpoint}'
+                  """
+                }
               }
-            }
-            '''
-            if (currentBuild.currentResult == 'SUCCESS') {
-              sh """
-              curl -X POST -H "Content-Type: application/json" \
-              -u $JIRA_USER:$JIRA_PASS \
-              -d '${jsonPayload}' \
-              '${jiraApiEndpoint}'
-              """
             }
           }
         }
