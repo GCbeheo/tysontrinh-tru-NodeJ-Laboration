@@ -50,7 +50,7 @@ pipeline {
           withCredentials([usernamePassword(credentialsId: 'jiraApiKey',
                             passwordVariable: 'JIRA_API_KEY',
                             usernameVariable: 'JIRA_USER')]) {
-            if ($param.ENV == "uat") {
+            if (params.ENV == "uat") {
               def jiraApiEndpoint = "${params.JIRA_SERVER_URL}/rest/api/2/issue/${params.JIRA_ISSUE_ID}/transitions"
               def jsonPayload = '''
               {
