@@ -47,7 +47,7 @@ pipeline {
 
       post {
         always {
-          withCredentials([usernamePassword(credentialsId: 'jiraApiKey',
+          withCredentials([usernamePassword(credentialsId: 'tyson@trufintech.io',
                             passwordVariable: 'JIRA_API_KEY',
                             usernameVariable: 'JIRA_USER')]) {
             script {
