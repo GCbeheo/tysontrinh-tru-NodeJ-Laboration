@@ -72,7 +72,7 @@ pipeline {
                 if (currentBuild.currentResult == 'SUCCESS') {
                   sh """
                   curl -X POST -H "Content-Type: application/json" \
-                  -u $JIRA_USER:$JIRA_PASS \
+                  -u $JIRA_USER:$JIRA_API_KEY \
                   -d '${jsonPayload}' \
                   '${jiraApiEndpoint}'
                   """
