@@ -42,6 +42,30 @@ pipeline {
   }
 
   stages {
+    stage('Check') {
+      steps {
+        withCredentials([usernamePassword(credentialsId: 'jiraApiKey',
+                passwordVariable: 'JIRA_API_KEY',
+                usernameVariable: 'JIRA_USER')]) {
+          script {
+            if (params.JIRA_SERVER_URL != 'NONE'
+                    && params.JIRA_ISSUE_ID != 'NONE'
+                    && params.JIRA_DONE_STATUS_ID != 'NONE'
+                    && params.JIRA_FAIL_STATUS_ID != 'NONE'
+                    && (params.ENV == 'uat' || params.ENV == 'demo')) {
+              def jiraApprovalStatusEndpoint = "${params.JIRA_SERVER_URL}/rest/servicedeskapi/request/${params.JIRA_ISSUE_ID}/approval"
+              def jiraResponse = sh(script: "curl -X GET -u $JIRA_USER:$JIRA_API_KEY '${jiraApprovalStatusEndpoint}'", returnStdout: true).trim()
+              def jsonResponse = readJSON text: jiraResponse
+
+              def finalDecision = jsonResponse.values[0].finalDecision
+
+              echo "Approval status for ${params.JIRA_ISSUE_ID} is: ${finalDecision}"
+            }
+          }
+        }
+      }
+    }
+
     stage('Deploy') {
       steps {
         // run AWS infra tasks
