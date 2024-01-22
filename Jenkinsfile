@@ -5,15 +5,15 @@ pipeline {
 
   parameters {
     string(
-            name: 'JIRA_ISSUE_ID',
-            description: 'The ticket ID to response back to Jira site',
-            defaultValue: "NONE",
+      name: 'JIRA_ISSUE_ID',
+      description: 'The ticket ID to response back to Jira site',
+      defaultValue: "NONE",
     )
 
     string(
-            name: 'JIRA_SERVER_URL',
-            description: 'The Jira URL to sent request back to Jira site',
-            defaultValue: "NONE",
+      name: 'JIRA_SERVER_URL',
+      description: 'The Jira URL to sent request back to Jira site',
+      defaultValue: "NONE",
     )
 
     string(
