@@ -57,9 +57,10 @@ pipeline {
               def jiraResponse = sh(script: "curl -X GET -u $JIRA_USER:$JIRA_API_KEY '${jiraApprovalStatusEndpoint}'", returnStdout: true).trim()
               def jsonResponse = readJSON text: jiraResponse
 
-              def finalDecision = jsonResponse.values[0].finalDecision
-
-              echo "Approval status for ${params.JIRA_ISSUE_ID} is: ${finalDecision}"
+              if (jsonResponse.values[0].finalDecision == 'approved')
+              {
+                error("The ticket on Jira wans't approved")
+              }
             }
           }
         }
