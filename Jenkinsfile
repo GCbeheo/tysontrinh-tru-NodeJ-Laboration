@@ -7,13 +7,13 @@ pipeline {
     string(
       name: 'JIRA_ISSUE_ID',
       description: 'The ticket ID to response back to Jira site',
-      defaultValue: "NONE",
+      defaultValue: "PCM-16",
     )
 
     string(
       name: 'JIRA_SERVER_URL',
       description: 'The Jira URL to sent request back to Jira site',
-      defaultValue: "NONE",
+      defaultValue: "https://trueshort.atlassian.net",
     )
 
     string(
@@ -25,7 +25,7 @@ pipeline {
     string(
       name: 'ENV',
       description: 'The ticket ID to response back to Jira site',
-      defaultValue: "dev",
+      defaultValue: "uat",
     )
 
     string(
@@ -43,13 +43,13 @@ pipeline {
     string(
       name: 'JIRA_ARTIFACT_FORM_ID',
       description: 'The Jira Form ID to get values of artifact number',
-      defaultValue: "NONE"
+      defaultValue: "21"
     )
 
     string(
       name: 'QA_BUILD_NUMBER',
       description: 'UAT artifact number for UAT deployment',
-      defaultValue: "NONE",
+      defaultValue: "1350",
     )
   }
 
@@ -82,10 +82,7 @@ pipeline {
               {
                 error("The Artifact number of this deployment different than Jira request input values.")
               }
-
             }
-
-
           }
         }
       }
