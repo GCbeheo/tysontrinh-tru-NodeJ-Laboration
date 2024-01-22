@@ -78,7 +78,7 @@ pipeline {
               def jiraArtifactValueResponse = sh(script: "curl -X GET -u $JIRA_USER:$JIRA_API_KEY '${jiraArtifactValueEndpoint}'", returnStdout: true).trim()
               def jsonArtifactValueResponse = readJSON text: jiraArtifactValueResponse
 
-              if (jsonArtifactValueResponse.value.state.answers.21.text == params.QA_BUILD_NUMBER)
+              if (jsonArtifactValueResponse.value.state.answers['21'].text == params.QA_BUILD_NUMBER)
               {
                 error("The Artifact number of this deployment different than Jira request input values.")
               }
