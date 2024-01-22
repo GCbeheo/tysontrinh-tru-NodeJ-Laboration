@@ -29,15 +29,15 @@ pipeline {
     )
 
     string(
-            name: 'JIRA_DONE_STATUS_ID',
-            description: 'The Jira status id for Done transition',
-            defaultValue: "61",
+      name: 'JIRA_DONE_STATUS_ID',
+      description: 'The Jira status id for Done transition',
+      defaultValue: "61",
     )
 
     string(
-            name: 'JIRA_FAIL_STATUS_ID',
-            description: 'The Jira status id for Fail transition',
-            defaultValue: "101",
+      name: 'JIRA_FAIL_STATUS_ID',
+      description: 'The Jira status id for Fail transition',
+      defaultValue: "101",
     )
   }
 
