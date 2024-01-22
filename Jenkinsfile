@@ -5,15 +5,15 @@ pipeline {
 
   parameters {
     string(
-      name: 'JIRA_ISSUE_ID',
-      description: 'The ticket ID to response back to Jira site',
-      defaultValue: "NONE",
+            name: 'JIRA_ISSUE_ID',
+            description: 'The ticket ID to response back to Jira site',
+            defaultValue: "NONE",
     )
 
     string(
-      name: 'JIRA_SERVER_URL',
-      description: 'The ticket ID to response back to Jira site',
-      defaultValue: "NONE",
+            name: 'JIRA_SERVER_URL',
+            description: 'The Jira URL to sent request back to Jira site',
+            defaultValue: "NONE",
     )
 
     string(
@@ -26,6 +26,18 @@ pipeline {
       name: 'ENV',
       description: 'The ticket ID to response back to Jira site',
       defaultValue: "dev",
+    )
+
+    string(
+            name: 'JIRA_DONE_STATUS_ID',
+            description: 'The Jira status id for Done transition',
+            defaultValue: "61",
+    )
+
+    string(
+            name: 'JIRA_FAIL_STATUS_ID',
+            description: 'The Jira status id for Fail transition',
+            defaultValue: "101",
     )
   }
 
@@ -48,28 +60,55 @@ pipeline {
       post {
         always {
           withCredentials([usernamePassword(credentialsId: 'jiraApiKey',
-                            passwordVariable: 'JIRA_API_KEY',
-                            usernameVariable: 'JIRA_USER')]) {
+                  passwordVariable: 'JIRA_API_KEY',
+                  usernameVariable: 'JIRA_USER')]) {
             script {
-              if (params.ENV == 'uat') {
+              if (params.JIRA_SERVER_URL != 'NONE'
+                      && params.JIRA_ISSUE_ID != 'NONE'
+                      && params.JIRA_DONE_STATUS_ID != 'NONE'
+                      && params.JIRA_FAIL_STATUS_ID != 'NONE'
+                      && (params.DEPLOY_ENV == 'uat' || params.DEPLOY_ENV == 'demo')) {
                 def jiraApiEndpoint = "${params.JIRA_SERVER_URL}/rest/api/2/issue/${params.JIRA_ISSUE_ID}/transitions"
-                def jsonPayload = '''
-                {
-                  "update": {
-                    "comment": [
-                      {
-                        "add": {
-                          "body": "Deploy has been done."
+                if (currentBuild.currentResult == 'SUCCESS' || currentBuild.currentResult == 'UNSTABLE') {
+                  def jsonPayload = """
+                  {
+                    "update": {
+                      "comment": [
+                        {
+                          "add": {
+                            "body": "Deploy was ${currentBuild.currentResult}."
+                          }
                         }
-                      }
-                    ]
-                  },
-                  "transition": {
-                    "id": "61"
+                      ]
+                    },
+                    "transition": {
+                      "id": "${params.JIRA_DONE_STATUS_ID}"
+                    }
                   }
-                }
-                '''
-                if (currentBuild.currentResult == 'SUCCESS') {
+                  """
+                  sh """
+                  curl -X POST -H "Content-Type: application/json" \
+                  -u $JIRA_USER:$JIRA_API_KEY \
+                  -d '${jsonPayload}' \
+                  '${jiraApiEndpoint}'
+                  """
+                } else if (currentBuild.currentResult == 'FAILURE') {
+                  def jsonPayload = """
+                  {
+                    "update": {
+                      "comment": [
+                        {
+                          "add": {
+                            "body": "Deploy was ${currentBuild.currentResult}."
+                          }
+                        }
+                      ]
+                    },
+                    "transition": {
+                      "id": "${params.JIRA_FAIL_STATUS_ID}"
+                    }
+                  }
+                  """
                   sh """
                   curl -X POST -H "Content-Type: application/json" \
                   -u $JIRA_USER:$JIRA_API_KEY \
