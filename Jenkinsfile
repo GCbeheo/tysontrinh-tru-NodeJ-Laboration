@@ -69,14 +69,14 @@ pipeline {
                       && params.JIRA_FAIL_STATUS_ID != 'NONE'
                       && (params.DEPLOY_ENV == 'uat' || params.DEPLOY_ENV == 'demo')) {
                 def jiraApiEndpoint = "${params.JIRA_SERVER_URL}/rest/api/2/issue/${params.JIRA_ISSUE_ID}/transitions"
-                if (currentBuild.currentResult == 'SUCCESS' || currentBuild.currentResult == 'UNSTABLE') {
+                if (params.RESULT == '0') {
                   def jsonPayload = """
                   {
                     "update": {
                       "comment": [
                         {
                           "add": {
-                            "body": "Deploy was ${currentBuild.currentResult}."
+                            "body": "Deploy was done"
                           }
                         }
                       ]
@@ -92,14 +92,14 @@ pipeline {
                   -d '${jsonPayload}' \
                   '${jiraApiEndpoint}'
                   """
-                } else if (currentBuild.currentResult == 'FAILURE') {
+                } else if (params.RESULT == '1') {
                   def jsonPayload = """
                   {
                     "update": {
                       "comment": [
                         {
                           "add": {
-                            "body": "Deploy was ${currentBuild.currentResult}."
+                            "body": "Deploy was fail"
                           }
                         }
                       ]
