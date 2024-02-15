@@ -33,18 +33,30 @@ pipeline {
         stage('Deploy') {
             steps {
                 checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: '*/main']],
-                    doGenerateSubmoduleConfigurations: false,
-                    extensions: [],
-                    submoduleCfg: [],
-                    userRemoteConfigs: [[credentialsId: 'github', url: "git@github.com:${params.TICKET_REPO}.git"]]
+                        $class                           : 'GitSCM',
+                        branches                         : [[name: '*/main']],
+                        doGenerateSubmoduleConfigurations: false,
+                        extensions                       : [],
+                        submoduleCfg                     : [],
+                        userRemoteConfigs                : [[credentialsId: 'github', url: "git@github.com:${params.TICKET_REPO}.git"]]
                 ])
 
-                dir("${params.TICKET_REPO}") {
-                    sh '''
-                        ls -la
-                    '''
+                script {
+                    dir("${params.TICKET_REPO}") {
+                        def ticketIds = readFile('ticket-id.txt').split('\n')
+                        ticketIds { ticketId ->
+                            withCredentials([usernamePassword(credentialsId: 'jiraApiKey',
+                                    passwordVariable: 'JIRA_API_KEY',
+                                    usernameVariable: 'JIRA_USER')]) {
+                                script {
+                                    sh """
+                                        echo "${ticketId}"
+                                    """
+                                }
+                            }
+                        }
+                        writeFile file: 'ticket-id.txt', text: ''
+                    }
                 }
             }
 
