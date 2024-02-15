@@ -25,7 +25,7 @@ pipeline {
         string(
                 name: 'TICKET_REPO',
                 description: 'The Repository have the list of ticket ID',
-                defaultValue: 'git@github.com:TrueShort/truweb-ticket-update.git'
+                defaultValue: 'TrueShort/truweb-ticket-update'
         )
     }
 
@@ -38,23 +38,14 @@ pipeline {
                     doGenerateSubmoduleConfigurations: false,
                     extensions: [],
                     submoduleCfg: [],
-                    userRemoteConfigs: [[credentialsId: 'github', url: params.TICKET_REPO]]
+                    userRemoteConfigs: [[credentialsId: 'github', url: "git@github.com:${params.TICKET_REPO}.git"]]
                 ])
 
-                script {
-                    sh "ls -al"
+                dir("${params.TICKET_REPO}") {
+                    sh '''
+                        ls -la
+                    '''
                 }
-
-//                script {
-//                    if (params.RESULT == '0') {
-//                        echo "Building is SUCCESS"
-//                    } else if (params.RESULT == '1') {
-//                        echo "Buiding is FAILURE"
-//                        return 1
-//                    } else {
-//                        error("Invalid ENV parameter value: ${params.RESULT}")
-//                    }
-//                }
             }
 
 //            post {
