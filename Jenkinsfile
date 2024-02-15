@@ -38,7 +38,7 @@ pipeline {
                     doGenerateSubmoduleConfigurations: false,
                     extensions: [],
                     submoduleCfg: [],
-                    userRemoteConfigs: [[credentialsId: 'github', url: "https://github.com/${params.TICKET_REPO}.git"]]
+                    userRemoteConfigs: [[credentialsId: 'github', url: "git@github.com:${params.TICKET_REPO}.git"]]
                 ])
 
                 dir("${params.TICKET_REPO}") {
