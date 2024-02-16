@@ -31,7 +31,16 @@ pipeline {
 
     stages {
         stage('Deploy') {
-
+            script {
+                if (params.RESULT == '0') {
+                    echo "Building is SUCCESS"
+                } else if (params.RESULT == '1') {
+                    echo "Buiding is FAILURE"
+                    return 1
+                } else {
+                    error("Invalid ENV parameter value: ${params.RESULT}")
+                }
+            }
         }
 
         post {
@@ -53,7 +62,7 @@ pipeline {
                                 usernameVariable: 'JIRA_USER')]) {
                             script {
                                 for (ticketId in ticketIds) {
-                                    def jiraTicketEndpoint = "${params.JIRA_SERVER_URL}/rest/api/2/issue/${params.JIRA_ISSUE_ID}"
+//                                    def jiraTicketEndpoint = "${params.JIRA_SERVER_URL}/rest/api/2/issue/${params.JIRA_ISSUE_ID}"
                                     def deploymentStatusId = {
                                         switch (params.ENV) {
                                             case 'dev':
@@ -69,17 +78,17 @@ pipeline {
                                             default:
                                                 error("Invalid Environment value")
                                         }
-                                    sh """
+                                        sh """
                                         echo "${deploymentStatusId}"
                                     """
+                                    }
                                 }
                             }
-                        }
 
-                        writeFile file: 'ticket-id.txt', text: ''
+                            writeFile file: 'ticket-id.txt', text: ''
 
-                        withCredentials([sshUserPrivateKey(credentialsId: 'github', keyFileVariable: 'SSH_KEY')]) {
-                            sh """
+                            withCredentials([sshUserPrivateKey(credentialsId: 'github', keyFileVariable: 'SSH_KEY')]) {
+                                sh """
                                 export GIT_SSH_COMMAND='ssh -i $SSH_KEY'
                                 git config user.name "Jenkins Automation"
                                 git config user.email "jenkins@trufintech.io"
@@ -87,9 +96,9 @@ pipeline {
                                 git commit -m "Empty ticket-id.txt"
                                 git push origin HEAD:main
                            """
+                            }
                         }
                     }
-                }
 //                withCredentials([usernamePassword(credentialsId: 'jiraApiKey',
 //                        passwordVariable: 'JIRA_API_KEY',
 //                        usernameVariable: 'JIRA_USER')]) {
@@ -124,8 +133,8 @@ pipeline {
 //                    }
 //                }
 
+                }
             }
         }
     }
-}
 }
