@@ -19,7 +19,7 @@ pipeline {
         string(
                 name: 'ENV',
                 description: 'The ticket ID to response back to Jira site',
-                defaultValue: "uat",
+                defaultValue: "dev",
         )
 
         string(
@@ -31,7 +31,11 @@ pipeline {
 
     stages {
         stage('Deploy') {
-            steps {
+
+        }
+
+        post {
+            always {
                 checkout([
                         $class                           : 'GitSCM',
                         branches                         : [[name: '*/main']],
@@ -49,8 +53,24 @@ pipeline {
                                 usernameVariable: 'JIRA_USER')]) {
                             script {
                                 for (ticketId in ticketIds) {
+                                    def jiraTicketEndpoint = "${params.JIRA_SERVER_URL}/rest/api/2/issue/${params.JIRA_ISSUE_ID}"
+                                    def deploymentStatusId = {
+                                        switch (params.ENV) {
+                                            case 'dev':
+                                                return "10207"
+                                            case 'qa':
+                                                return "10208"
+                                            case 'uat':
+                                                return "10209"
+                                            case 'demo':
+                                                return "10210"
+                                            case 'prod':
+                                                return "10211"
+                                            default:
+                                                error("Invalid Environment value")
+                                        }
                                     sh """
-                                        echo "${ticketId}"
+                                        echo "${deploymentStatusId}"
                                     """
                                 }
                             }
@@ -70,18 +90,14 @@ pipeline {
                         }
                     }
                 }
-            }
-
-//            post {
-//                always {
-//                    withCredentials([usernamePassword(credentialsId: 'jiraApiKey',
-//                            passwordVariable: 'JIRA_API_KEY',
-//                            usernameVariable: 'JIRA_USER')]) {
-//                        script {
-//                            if (params.JIRA_SERVER_URL != 'NONE') {
-//                                def jiraApiEndpoint = "${params.JIRA_SERVER_URL}/rest/api/2/issue/${params.JIRA_ISSUE_ID}/transitions"
-//                                if (currentBuild.currentResult == 'SUCCESS' || currentBuild.currentResult == 'UNSTABLE') {
-//                                    def jsonPayload = """
+//                withCredentials([usernamePassword(credentialsId: 'jiraApiKey',
+//                        passwordVariable: 'JIRA_API_KEY',
+//                        usernameVariable: 'JIRA_USER')]) {
+//                    script {
+//                        if (params.JIRA_SERVER_URL != 'NONE') {
+//                            def jiraApiEndpoint = "${params.JIRA_SERVER_URL}/rest/api/2/issue/${params.JIRA_ISSUE_ID}/transitions"
+//                            if (currentBuild.currentResult == 'SUCCESS' || currentBuild.currentResult == 'UNSTABLE') {
+//                                def jsonPayload = """
 //                  {
 //                    "update": {
 //                      "comment": [
@@ -97,19 +113,19 @@ pipeline {
 //                    }
 //                  }
 //                  """
-//                                    sh """
+//                                sh """
 //                  curl -X POST -H "Content-Type: application/json" \
 //                  -u $JIRA_USER:$JIRA_API_KEY \
 //                  -d '${jsonPayload}' \
 //                  '${jiraApiEndpoint}'
 //                  """
-//                                }
 //                            }
 //                        }
 //                    }
-//
 //                }
-//            }
+
+            }
         }
     }
+}
 }
