@@ -44,7 +44,7 @@ pipeline {
                 script {
                     dir("${params.TICKET_REPO}") {
                         def ticketIds = readFile('ticket-id.txt').split('\n')
-                        ticketIds { ticketId ->
+                        for (ticketId in ticketIds) {
                             withCredentials([usernamePassword(credentialsId: 'jiraApiKey',
                                     passwordVariable: 'JIRA_API_KEY',
                                     usernameVariable: 'JIRA_USER')]) {
