@@ -72,7 +72,7 @@ pipeline {
                                     usernameVariable: 'JIRA_USER')]) {
                                 script {
                                     for (ticketId in ticketIds) {
-                                        def jiraTicketEndpoint = "${params.JIRA_SERVER_URL}/rest/api/2/issue/${params.JIRA_ISSUE_ID}"
+                                        def jiraTicketEndpoint = "${params.JIRA_SERVER_URL}/rest/api/2/issue/${ticketId}"
                                         def deploymentStatusId = envMap[params.ENV]
 
                                         if (deploymentStatusId == null) {
