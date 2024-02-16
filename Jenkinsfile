@@ -44,17 +44,18 @@ pipeline {
                 script {
                     dir("${params.TICKET_REPO}") {
                         def ticketIds = readFile('ticket-id.txt').split('\n')
-                        for (ticketId in ticketIds) {
-                            withCredentials([usernamePassword(credentialsId: 'jiraApiKey',
-                                    passwordVariable: 'JIRA_API_KEY',
-                                    usernameVariable: 'JIRA_USER')]) {
-                                script {
+                        withCredentials([usernamePassword(credentialsId: 'jiraApiKey',
+                                passwordVariable: 'JIRA_API_KEY',
+                                usernameVariable: 'JIRA_USER')]) {
+                            script {
+                                for (ticketId in ticketIds) {
                                     sh """
                                         echo "${ticketId}"
                                     """
                                 }
                             }
                         }
+
                         writeFile file: 'ticket-id.txt', text: ''
 
                         withCredentials([sshUserPrivateKey(credentialsId: 'github', keyFileVariable: 'SSH_KEY')]) {
