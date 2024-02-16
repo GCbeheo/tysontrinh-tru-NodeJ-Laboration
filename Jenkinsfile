@@ -65,6 +65,10 @@ pipeline {
                     ])
 
                     script {
+                        sh """
+                            ls -lah
+                            git remote -v
+                        """
                         def ticketIds = readFile('ticket-id.txt').split('\n')
                         withCredentials([usernamePassword(credentialsId: 'jiraApiKey',
                                 passwordVariable: 'JIRA_API_KEY',
