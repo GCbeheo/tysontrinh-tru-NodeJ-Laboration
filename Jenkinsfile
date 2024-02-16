@@ -65,22 +65,21 @@ pipeline {
                     ])
 
                     script {
-                        dir("${params.TICKET_REPO}") {
-                            def ticketIds = readFile('ticket-id.txt').split('\n')
-                            withCredentials([usernamePassword(credentialsId: 'jiraApiKey',
-                                    passwordVariable: 'JIRA_API_KEY',
-                                    usernameVariable: 'JIRA_USER')]) {
-                                script {
-                                    for (ticketId in ticketIds) {
-                                        def jiraTicketEndpoint = "${params.JIRA_SERVER_URL}/rest/api/2/issue/${ticketId}"
-                                        def deploymentStatusId = envMap[params.ENV]
+                        def ticketIds = readFile('ticket-id.txt').split('\n')
+                        withCredentials([usernamePassword(credentialsId: 'jiraApiKey',
+                                passwordVariable: 'JIRA_API_KEY',
+                                usernameVariable: 'JIRA_USER')]) {
+                            script {
+                                for (ticketId in ticketIds) {
+                                    def jiraTicketEndpoint = "${params.JIRA_SERVER_URL}/rest/api/2/issue/${ticketId}"
+                                    def deploymentStatusId = envMap[params.ENV]
 
-                                        if (deploymentStatusId == null) {
-                                            error("Invalid Environment value")
-                                        }
+                                    if (deploymentStatusId == null) {
+                                        error("Invalid Environment value")
+                                    }
 
-                                        if (currentBuild.currentResult == 'SUCCESS' || currentBuild.currentResult == 'UNSTABLE') {
-                                            def jsonDeploymentUpdatePayload = """
+                                    if (currentBuild.currentResult == 'SUCCESS' || currentBuild.currentResult == 'UNSTABLE') {
+                                        def jsonDeploymentUpdatePayload = """
                                                 {
                                                     "fields" : {
                                                         "${jiraDeploymentFieldId}" : {
@@ -89,21 +88,21 @@ pipeline {
                                                     }
                                                 }
                                             """
-                                            sh """
+                                        sh """
                                                 curl -X PUT -H "Content-Type: application/json" \
                                                 -u $JIRA_USER:$JIRA_API_KEY \
                                                 -d '${jsonDeploymentUpdatePayload}' \
                                                 '${jiraTicketEndpoint}'
                                             """
-                                        }
                                     }
                                 }
                             }
+                        }
 
-                            writeFile file: 'ticket-id.txt', text: ''
+                        writeFile file: 'ticket-id.txt', text: ''
 
-                            withCredentials([sshUserPrivateKey(credentialsId: 'github', keyFileVariable: 'SSH_KEY')]) {
-                                sh """
+                        withCredentials([sshUserPrivateKey(credentialsId: 'github', keyFileVariable: 'SSH_KEY')]) {
+                            sh """
                                         export GIT_SSH_COMMAND='ssh -i $SSH_KEY'
                                         git config user.name "Jenkins Automation"
                                         git config user.email "jenkins@trufintech.io"
@@ -111,8 +110,8 @@ pipeline {
                                         git commit -m "Empty ticket-id.txt"
                                         git push origin HEAD:main
                                     """
-                            }
                         }
+
                     }
                 }
             }
