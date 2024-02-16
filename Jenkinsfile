@@ -63,21 +63,20 @@ pipeline {
                                 script {
                                     for (ticketId in ticketIds) {
 //                                    def jiraTicketEndpoint = "${params.JIRA_SERVER_URL}/rest/api/2/issue/${params.JIRA_ISSUE_ID}"
-                                        def deploymentStatusId = {
-                                            switch (params.ENV) {
-                                                case 'dev':
-                                                    return "10207"
-                                                case 'qa':
-                                                    return "10208"
-                                                case 'uat':
-                                                    return "10209"
-                                                case 'demo':
-                                                    return "10210"
-                                                case 'prod':
-                                                    return "10211"
-                                                default:
-                                                    error("Invalid Environment value")
-                                            }
+                                        def deploymentStatusId = null
+                                        switch (params.ENV) {
+                                            case 'dev':
+                                                 return deploymentStatusId = "10207"
+                                            case 'qa':
+                                                return deploymentStatusId = "10208"
+                                            case 'uat':
+                                                return deploymentStatusId = "10209"
+                                            case 'demo':
+                                                return deploymentStatusId = "10210"
+                                            case 'prod':
+                                                return deploymentStatusId = "10211"
+                                            default:
+                                                error("Invalid Environment value")
                                         }
                                         sh """
                                         echo "${deploymentStatusId}"
