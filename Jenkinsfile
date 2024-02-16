@@ -6,6 +6,8 @@ def envMap = [
         'prod': '10211'
 ]
 
+def jiraDeploymentFieldId = "customfield_10254"
+
 pipeline {
     agent {
         label 'truweb-deploy-postgresql'
@@ -70,16 +72,30 @@ pipeline {
                                     usernameVariable: 'JIRA_USER')]) {
                                 script {
                                     for (ticketId in ticketIds) {
-//                                    def jiraTicketEndpoint = "${params.JIRA_SERVER_URL}/rest/api/2/issue/${params.JIRA_ISSUE_ID}"
+                                        def jiraTicketEndpoint = "${params.JIRA_SERVER_URL}/rest/api/2/issue/${params.JIRA_ISSUE_ID}"
                                         def deploymentStatusId = envMap[params.ENV]
+
                                         if (deploymentStatusId == null) {
                                             error("Invalid Environment value")
                                         }
 
-                                        sh """
-                                            echo "${deploymentStatusId}"
-                                            echo "It reach this block"
-                                        """
+                                        if (currentBuild.currentResult == 'SUCCESS' || currentBuild.currentResult == 'UNSTABLE') {
+                                            def jsonDeploymentUpdatePayload = """
+                                                {
+                                                    "fields" : {
+                                                        "${jiraDeploymentFieldId}" : {
+                                                            "id" : "${deploymentStatusId}"
+                                                        }
+                                                    }
+                                                }
+                                            """
+                                            sh """
+                                                curl -X PUT -H "Content-Type: application/json" \
+                                                -u $JIRA_USER:$JIRA_API_KEY \
+                                                -d '${jsonDeploymentUpdatePayload}' \
+                                                '${jiraTicketEndpoint}'
+                                            """
+                                        }
                                     }
                                 }
                             }
@@ -98,43 +114,8 @@ pipeline {
                             }
                         }
                     }
-//                withCredentials([usernamePassword(credentialsId: 'jiraApiKey',
-//                        passwordVariable: 'JIRA_API_KEY',
-//                        usernameVariable: 'JIRA_USER')]) {
-//                    script {
-//                        if (params.JIRA_SERVER_URL != 'NONE') {
-//                            def jiraApiEndpoint = "${params.JIRA_SERVER_URL}/rest/api/2/issue/${params.JIRA_ISSUE_ID}/transitions"
-//                            if (currentBuild.currentResult == 'SUCCESS' || currentBuild.currentResult == 'UNSTABLE') {
-//                                def jsonPayload = """
-//                  {
-//                    "update": {
-//                      "comment": [
-//                        {
-//                          "add": {
-//                            "body": "Deploy was ${currentBuild.currentResult}."
-//                          }
-//                        }
-//                      ]
-//                    },
-//                    "transition": {
-//                      "id": "${params.JIRA_DONE_STATUS_ID}"
-//                    }
-//                  }
-//                  """
-//                                sh """
-//                  curl -X POST -H "Content-Type: application/json" \
-//                  -u $JIRA_USER:$JIRA_API_KEY \
-//                  -d '${jsonPayload}' \
-//                  '${jiraApiEndpoint}'
-//                  """
-//                            }
-//                        }
-//                    }
-//                }
-
                 }
             }
         }
-
     }
 }
