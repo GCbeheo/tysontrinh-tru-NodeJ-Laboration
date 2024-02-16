@@ -58,13 +58,23 @@ pipeline {
                         writeFile file: 'ticket-id.txt', text: ''
 
                         sh("""
-                            cd ../../
+                            
                             git config user.name "Jenkins"
-                            git config user.email "jenkins@no-reply.com"
-                            git add ${params.TICKET_REPO}/ticket-id.txt
+                            git config user.email "jenkins@trufintech.io"
+                            git add ticket-id.txt
                             git commit -m "Empty ticket-id.txt"
                             git push origin HEAD:main
                         """)
+                        withCredentials([sshUserPrivateKey(credentialsId: 'github', keyFileVariable: 'SSH_KEY')]) {
+                            sh """
+                                export GIT_SSH_COMMAND='ssh -i $SSH_KEY'
+                                git config user.name "Jenkins"
+                                git config user.email "jenkins@trufintech.io"
+                                git add ticket-id.txt
+                                git commit -m "Empty ticket-id.txt"
+                                git push origin HEAD:main
+                           """
+                        }
                     }
                 }
             }
