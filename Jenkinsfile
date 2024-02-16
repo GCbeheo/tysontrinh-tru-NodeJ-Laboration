@@ -78,6 +78,7 @@ pipeline {
                                                 default:
                                                     error("Invalid Environment value")
                                             }
+                                        }
                                             sh """
                                         echo "${deploymentStatusId}"
                                     """
@@ -89,13 +90,13 @@ pipeline {
 
                                 withCredentials([sshUserPrivateKey(credentialsId: 'github', keyFileVariable: 'SSH_KEY')]) {
                                     sh """
-                                export GIT_SSH_COMMAND='ssh -i $SSH_KEY'
-                                git config user.name "Jenkins Automation"
-                                git config user.email "jenkins@trufintech.io"
-                                git add ticket-id.txt
-                                git commit -m "Empty ticket-id.txt"
-                                git push origin HEAD:main
-                           """
+                                        export GIT_SSH_COMMAND='ssh -i $SSH_KEY'
+                                        git config user.name "Jenkins Automation"
+                                        git config user.email "jenkins@trufintech.io"
+                                        git add ticket-id.txt
+                                        git commit -m "Empty ticket-id.txt"
+                                        git push origin HEAD:main
+                                    """
                                 }
                             }
                         }
