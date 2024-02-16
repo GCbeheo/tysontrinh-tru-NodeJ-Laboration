@@ -79,17 +79,17 @@ pipeline {
                                                     error("Invalid Environment value")
                                             }
                                         }
-                                            sh """
+                                        sh """
                                         echo "${deploymentStatusId}"
                                     """
-                                        }
                                     }
                                 }
+                            }
 
-                                writeFile file: 'ticket-id.txt', text: ''
+                            writeFile file: 'ticket-id.txt', text: ''
 
-                                withCredentials([sshUserPrivateKey(credentialsId: 'github', keyFileVariable: 'SSH_KEY')]) {
-                                    sh """
+                            withCredentials([sshUserPrivateKey(credentialsId: 'github', keyFileVariable: 'SSH_KEY')]) {
+                                sh """
                                         export GIT_SSH_COMMAND='ssh -i $SSH_KEY'
                                         git config user.name "Jenkins Automation"
                                         git config user.email "jenkins@trufintech.io"
@@ -97,9 +97,9 @@ pipeline {
                                         git commit -m "Empty ticket-id.txt"
                                         git push origin HEAD:main
                                     """
-                                }
                             }
                         }
+                    }
 //                withCredentials([usernamePassword(credentialsId: 'jiraApiKey',
 //                        passwordVariable: 'JIRA_API_KEY',
 //                        usernameVariable: 'JIRA_USER')]) {
@@ -134,10 +134,9 @@ pipeline {
 //                    }
 //                }
 
-                    }
                 }
             }
-
         }
+
     }
 }
