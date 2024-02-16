@@ -68,6 +68,7 @@ pipeline {
                         withCredentials([sshUserPrivateKey(credentialsId: 'github', keyFileVariable: 'SSH_KEY')]) {
                             sh """
                                 export GIT_SSH_COMMAND='ssh -i $SSH_KEY'
+                                git remote -v
                                 git config user.name "Jenkins"
                                 git config user.email "jenkins@trufintech.io"
                                 git add ticket-id.txt
