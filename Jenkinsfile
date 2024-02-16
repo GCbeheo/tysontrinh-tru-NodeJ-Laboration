@@ -79,8 +79,9 @@ pipeline {
                                                 error("Invalid Environment value")
                                         }
                                         sh """
-                                        echo "${deploymentStatusId}"
-                                    """
+                                            echo "${deploymentStatusId}"
+                                            echo "It reach this block"
+                                        """
                                     }
                                 }
                             }
