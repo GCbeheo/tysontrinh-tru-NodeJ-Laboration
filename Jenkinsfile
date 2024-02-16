@@ -1,3 +1,11 @@
+def envMap = [
+        'dev' : '10207',
+        'qa'  : '10208',
+        'uat' : '10209',
+        'demo': '10210',
+        'prod': '10211'
+]
+
 pipeline {
     agent {
         label 'truweb-deploy-postgresql'
@@ -63,21 +71,11 @@ pipeline {
                                 script {
                                     for (ticketId in ticketIds) {
 //                                    def jiraTicketEndpoint = "${params.JIRA_SERVER_URL}/rest/api/2/issue/${params.JIRA_ISSUE_ID}"
-                                        def deploymentStatusId = null
-                                        switch (params.ENV) {
-                                            case 'dev':
-                                                 return deploymentStatusId = "10207"
-                                            case 'qa':
-                                                return deploymentStatusId = "10208"
-                                            case 'uat':
-                                                return deploymentStatusId = "10209"
-                                            case 'demo':
-                                                return deploymentStatusId = "10210"
-                                            case 'prod':
-                                                return deploymentStatusId = "10211"
-                                            default:
-                                                error("Invalid Environment value")
+                                        def deploymentStatusId = envMap[params.ENV]
+                                        if (deploymentStatusId == null) {
+                                            error("Invalid Environment value")
                                         }
+
                                         sh """
                                             echo "${deploymentStatusId}"
                                             echo "It reach this block"
