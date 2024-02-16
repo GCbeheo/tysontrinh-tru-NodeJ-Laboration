@@ -31,64 +31,64 @@ pipeline {
 
     stages {
         stage('Deploy') {
-            script {
-                if (params.RESULT == '0') {
-                    echo "Building is SUCCESS"
-                } else if (params.RESULT == '1') {
-                    echo "Buiding is FAILURE"
-                    return 1
-                } else {
-                    error("Invalid ENV parameter value: ${params.RESULT}")
+            steps {
+                script {
+                    if (params.RESULT == '0') {
+                        echo "Building is SUCCESS"
+                    } else if (params.RESULT == '1') {
+                        echo "Buiding is FAILURE"
+                        return 1
+                    } else {
+                        error("Invalid ENV parameter value: ${params.RESULT}")
+                    }
                 }
             }
-        }
+            post {
+                always {
+                    checkout([
+                            $class                           : 'GitSCM',
+                            branches                         : [[name: '*/main']],
+                            doGenerateSubmoduleConfigurations: false,
+                            extensions                       : [],
+                            submoduleCfg                     : [],
+                            userRemoteConfigs                : [[credentialsId: 'github', url: "git@github.com:${params.TICKET_REPO}.git"]]
+                    ])
 
-        post {
-            always {
-                checkout([
-                        $class                           : 'GitSCM',
-                        branches                         : [[name: '*/main']],
-                        doGenerateSubmoduleConfigurations: false,
-                        extensions                       : [],
-                        submoduleCfg                     : [],
-                        userRemoteConfigs                : [[credentialsId: 'github', url: "git@github.com:${params.TICKET_REPO}.git"]]
-                ])
-
-                script {
-                    dir("${params.TICKET_REPO}") {
-                        def ticketIds = readFile('ticket-id.txt').split('\n')
-                        withCredentials([usernamePassword(credentialsId: 'jiraApiKey',
-                                passwordVariable: 'JIRA_API_KEY',
-                                usernameVariable: 'JIRA_USER')]) {
-                            script {
-                                for (ticketId in ticketIds) {
+                    script {
+                        dir("${params.TICKET_REPO}") {
+                            def ticketIds = readFile('ticket-id.txt').split('\n')
+                            withCredentials([usernamePassword(credentialsId: 'jiraApiKey',
+                                    passwordVariable: 'JIRA_API_KEY',
+                                    usernameVariable: 'JIRA_USER')]) {
+                                script {
+                                    for (ticketId in ticketIds) {
 //                                    def jiraTicketEndpoint = "${params.JIRA_SERVER_URL}/rest/api/2/issue/${params.JIRA_ISSUE_ID}"
-                                    def deploymentStatusId = {
-                                        switch (params.ENV) {
-                                            case 'dev':
-                                                return "10207"
-                                            case 'qa':
-                                                return "10208"
-                                            case 'uat':
-                                                return "10209"
-                                            case 'demo':
-                                                return "10210"
-                                            case 'prod':
-                                                return "10211"
-                                            default:
-                                                error("Invalid Environment value")
-                                        }
-                                        sh """
+                                        def deploymentStatusId = {
+                                            switch (params.ENV) {
+                                                case 'dev':
+                                                    return "10207"
+                                                case 'qa':
+                                                    return "10208"
+                                                case 'uat':
+                                                    return "10209"
+                                                case 'demo':
+                                                    return "10210"
+                                                case 'prod':
+                                                    return "10211"
+                                                default:
+                                                    error("Invalid Environment value")
+                                            }
+                                            sh """
                                         echo "${deploymentStatusId}"
                                     """
+                                        }
                                     }
                                 }
-                            }
 
-                            writeFile file: 'ticket-id.txt', text: ''
+                                writeFile file: 'ticket-id.txt', text: ''
 
-                            withCredentials([sshUserPrivateKey(credentialsId: 'github', keyFileVariable: 'SSH_KEY')]) {
-                                sh """
+                                withCredentials([sshUserPrivateKey(credentialsId: 'github', keyFileVariable: 'SSH_KEY')]) {
+                                    sh """
                                 export GIT_SSH_COMMAND='ssh -i $SSH_KEY'
                                 git config user.name "Jenkins Automation"
                                 git config user.email "jenkins@trufintech.io"
@@ -96,9 +96,9 @@ pipeline {
                                 git commit -m "Empty ticket-id.txt"
                                 git push origin HEAD:main
                            """
+                                }
                             }
                         }
-                    }
 //                withCredentials([usernamePassword(credentialsId: 'jiraApiKey',
 //                        passwordVariable: 'JIRA_API_KEY',
 //                        usernameVariable: 'JIRA_USER')]) {
@@ -133,8 +133,10 @@ pipeline {
 //                    }
 //                }
 
+                    }
                 }
             }
+
         }
     }
 }
