@@ -58,9 +58,10 @@ pipeline {
                         writeFile file: 'ticket-id.txt', text: ''
 
                         sh("""
+                            cd ../../
                             git config user.name "Jenkins"
                             git config user.email "jenkins@no-reply.com"
-                            git add ticket-id.txt
+                            git add ${params.TICKET_REPO}/ticket-id.txt
                             git commit -m "Empty ticket-id.txt"
                             git push origin HEAD:main
                         """)
