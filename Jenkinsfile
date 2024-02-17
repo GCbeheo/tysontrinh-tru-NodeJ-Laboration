@@ -1,10 +1,8 @@
-def envMap = [
-        'dev' : '10207',
-        'qa'  : '10208',
-        'uat' : '10209',
-        'demo': '10210',
-        'prod': '10211'
-]
+def envMap = ['dev' : '10207',
+              'qa'  : '10208',
+              'uat' : '10209',
+              'demo': '10210',
+              'prod': '10211']
 
 def jiraDeploymentFieldId = "customfield_10254"
 
@@ -14,29 +12,21 @@ pipeline {
     }
 
     parameters {
-        string(
-                name: 'JIRA_SERVER_URL',
+        string(name: 'JIRA_SERVER_URL',
                 description: 'The Jira URL to sent request back to Jira site',
-                defaultValue: "https://trueshort.atlassian.net",
-        )
+                defaultValue: "https://trueshort.atlassian.net",)
 
-        string(
-                name: 'RESULT',
+        string(name: 'RESULT',
                 description: 'The ticket ID to response back to Jira site',
-                defaultValue: "0",
-        )
+                defaultValue: "0",)
 
-        string(
-                name: 'ENV',
+        string(name: 'ENV',
                 description: 'The ticket ID to response back to Jira site',
-                defaultValue: "dev",
-        )
+                defaultValue: "dev",)
 
-        string(
-                name: 'TICKET_REPO',
+        string(name: 'TICKET_REPO',
                 description: 'The Repository have the list of ticket ID',
-                defaultValue: 'TrueShort/truweb-ticket-update'
-        )
+                defaultValue: 'TrueShort/truweb-ticket-update')
     }
 
     stages {
@@ -55,14 +45,12 @@ pipeline {
             }
             post {
                 always {
-                    checkout([
-                            $class                           : 'GitSCM',
-                            branches                         : [[name: '*/main']],
-                            doGenerateSubmoduleConfigurations: false,
-                            extensions                       : [],
-                            submoduleCfg                     : [],
-                            userRemoteConfigs                : [[credentialsId: 'github', url: "git@github.com:${params.TICKET_REPO}.git"]]
-                    ])
+                    checkout([$class                           : 'GitSCM',
+                              branches                         : [[name: '*/main']],
+                              doGenerateSubmoduleConfigurations: false,
+                              extensions                       : [],
+                              submoduleCfg                     : [],
+                              userRemoteConfigs                : [[credentialsId: 'github', url: "git@github.com:${params.TICKET_REPO}.git"]]])
 
                     script {
                         sh """
@@ -118,6 +106,18 @@ pipeline {
 
                     }
                 }
+            }
+        }
+
+        stage('Archive Artifact') {
+            steps {
+                script {
+                    sh """
+                        git remote -v
+                        ls -lah
+                    """
+                }
+//                archiveArtifacts artifacts: 'ticket-id.txt', fingerprint: true
             }
         }
     }
