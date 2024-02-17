@@ -111,13 +111,7 @@ pipeline {
 
         stage('Archive Artifact') {
             steps {
-                script {
-                    sh """
-                        git remote -v
-                        ls -lah
-                    """
-                }
-//                archiveArtifacts artifacts: 'ticket-id.txt', fingerprint: true
+                archiveArtifacts artifacts: 'ticket-id.txt', fingerprint: true
             }
         }
     }
